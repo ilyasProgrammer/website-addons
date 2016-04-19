@@ -5,6 +5,8 @@ from openerp.addons.payment.models.payment_acquirer import ValidationError
 from openerp.addons.payment.tests.common import PaymentAcquirerCommon
 from openerp.tools import mute_logger
 from openerp.tests import common
+from lxml import etree as ET, html
+from lxml.html import builder as h
 
 @openerp.tests.common.at_install(True)
 @openerp.tests.common.post_install(True)
@@ -13,10 +15,11 @@ class AuthorizeForm(PaymentAcquirerCommon):
     @mute_logger('openerp.addons.payment_authorize.models.authorize', 'ValidationError')
     def test_10_go(self):
         cr, uid, context = self.env.cr, self.env.uid, {}
+        acquer = self.create_acquier()
         # authorize only support USD in test environment
         self.currency_usd = self.env['res.currency'].search([('name', '=', 'USD')], limit=1)[0]
         # get the authorize account
-        model, self.authorize_id = self.env['ir.model.data'].get_object_reference('payment_authorize', 'payment_acquirer_authorize')
+        self.authorize_id = acquer.id
         # Usefull models
         self.ir_model_data = self.registry('ir.model.data')
         self.sale_order_line = self.registry('sale.order.line')
@@ -103,8 +106,30 @@ class AuthorizeForm(PaymentAcquirerCommon):
             }, context=context)
 
         # validate it
-        self.payment_transaction.form_feedback(cr, uid, authorize_post_data, 'authorize', context=context)
+        # self.payment_transaction.form_feedback(cr, uid, authorize_post_data, 'authorize', context=context)
+        self.payment_transaction.form_feedback(cr, uid, '', 'fake', context=context)
         created_invoice_id = self.env['sale.order'].browse(so_id).invoice_ids[0].id
         created_ivoice = self.env['account.invoice'].browse(created_invoice_id)
         self.assertEqual(created_ivoice.state, 'paid', 'Invoice state wrong')
 
+    def create_acquier(self):
+        mod = self.env['payment.acquirer']
+        view_id = self.env['ir.ui.view'].create({
+            'name': "Test acquirer View",
+            'type': 'qweb',
+            'arch': '<div></div>',
+            'mode': 'primary',
+        })
+        opt = {
+            'id': "payment_acquirer_test",
+            'name': 'Acquier for tests',
+            'provider': 'test_provider',
+            'company_id': self.ref('base.main_company'),
+            'view_template_id': view_id.id,
+            'environment': 'test',
+            'pre_msg': 'lol',
+            'authorize_login': 'dummy',
+            'authorize_transaction_key': 'dummy',
+        }
+        rec = mod.create(opt)
+        return rec
