@@ -32,7 +32,7 @@ class WebsiteSale(website_sale):
             request.website.sale_reset(context=context)
             return request.redirect('/shop/confirmation')
         else:
-            return super(website_sale, self).payment()
+            return super(WebsiteSale, self).payment()
 
     @http.route('/shop/payment/get_status/<int:sale_order_id>', type='json', auth="public", website=True)
     def payment_get_status(self, sale_order_id, **post):
@@ -42,15 +42,15 @@ class WebsiteSale(website_sale):
         if 'nobill' in order.buy_way:
             return {'recall': False, 'message': ''}
         else:
-            return super(website_sale, self).payment_get_status(sale_order_id, **post)
+            return super(WebsiteSale, self).payment_get_status(sale_order_id, **post)
 
     def checkout_form_validate(self, data):
         self.set_custom_mandatory_fields()
-        return super(website_sale, self).checkout_form_validate(data)
+        return super(WebsiteSale, self).checkout_form_validate(data)
 
     def checkout_parse(self, address_type, data, remove_prefix=False):
         self.set_custom_mandatory_fields()
-        return super(website_sale, self).checkout_parse(address_type, data, remove_prefix)
+        return super(WebsiteSale, self).checkout_parse(address_type, data, remove_prefix)
 
     def set_custom_mandatory_fields(self):
         order = request.website.sale_get_order(force_create=1, context=request.context)
