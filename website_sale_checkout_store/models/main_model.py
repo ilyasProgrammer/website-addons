@@ -4,7 +4,7 @@ from openerp import models
 from openerp import fields
 
 
-class SaleOrder(models):
+class SaleOrder(models.Model):
     _inherit = "sale.order"
     buy_way = fields.Char()
 
