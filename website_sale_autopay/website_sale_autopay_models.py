@@ -6,10 +6,10 @@ import re
 
 _logger = logging.getLogger(__name__)
 
-class PaymentAcquirer(models.Model):
+
+class AccountJournal(models.Model):
     _inherit = 'account.journal'
 
-    # journal_id = fields.Many2one('account.journal', 'Payment method', help='This journal is used to auto pay invoice when online payment is received')
     payment_acquirer_id = fields.Many2one('payment.acquirer', 'Payment acquirer', required=True)
 
 
@@ -20,9 +20,10 @@ class SaleOrder(models.Model):
         super(SaleOrder, self).action_button_confirm(cr, uid, ids, context=context)
         r = self.browse(cr, uid, ids[0], context=context)
         if r.payment_tx_id and r.payment_tx_id.state == 'done' and r.payment_acquirer_id:
-            # journal_id = r.payment_acquirer_id.journal_id.id or self.pool['account.invoice'].default_get(cr, uid, ['journal_id'], context=context)['journal_id']
-            journal_ids = self.pool['account.journal'].search(cr, uid, [('company_id', '=', r.company_id.id),
-                                                                       ('payment_acquirer_id', '=', r.payment_acquirer_id.id)])
+            journal_ids = self.pool['account.journal'].search(cr, uid,
+                                                              [('company_id', '=', r.company_id.id),
+                                                               ('payment_acquirer_id', '=',
+                                                                r.payment_acquirer_id.id)])
             if not journal_ids:
                 _logger.warning("No journal for company_id %s and payment_acquirer_id %s. Make sure you have set payment_acquirer_id for all journals you use.", r.company_id.id, r.payment_acquirer_id.id)
                 return
