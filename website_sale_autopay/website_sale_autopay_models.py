@@ -5,17 +5,17 @@ import re
 
 
 class PaymentAcquirer(models.Model):
-    _inherit = 'payment.acquirer'
+    _inherit = 'account.journal'
 
-    journal_id = fields.Many2one('account.journal', 'Payment method', help='This journal is used to auto pay invoice when online payment is received')
+    # journal_id = fields.Many2one('account.journal', 'Payment method', help='This journal is used to auto pay invoice when online payment is received')
+    payment_acquirer_id = fields.Many2one('payment.acquirer', 'Payment acquirer')
 
 
-class sale_order(models.Model):
-
+class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
     def action_button_confirm(self, cr, uid, ids, context=None):
-        super(sale_order, self).action_button_confirm(cr, uid, ids, context=context)
+        super(SaleOrder, self).action_button_confirm(cr, uid, ids, context=context)
         r = self.browse(cr, uid, ids[0], context=context)
         if r.payment_tx_id and r.payment_tx_id.state == 'done' and r.payment_acquirer_id:
             journal_id = r.payment_acquirer_id.journal_id.id or self.pool['account.invoice'].default_get(cr, uid, ['journal_id'], context=context)['journal_id']
