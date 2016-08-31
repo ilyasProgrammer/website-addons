@@ -76,7 +76,6 @@ class SaleOrder(models.Model):
                     array.append([0, False, obj])
                 voucher_values[key] = array
             voucher_id = self.pool['account.voucher'].create(cr, uid, voucher_values, context=voucher_context)
-            print 'voucher_id', voucher_id
 
             # [pay]
             self.pool['account.voucher'].button_proforma_voucher(cr, uid, [voucher_id], context=voucher_context)
